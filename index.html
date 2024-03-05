@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tulostaulu</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: lightgray;
+        background-color: black;
+      }
+      input,
+      select {
+        display: block;
+        margin: 10px;
+      }
+      #tulostaulu {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      #teamAlogo {
+        width: 100px;
+        height: 100px;
+      }
+      #teamBlogo {
+        width: 100px;
+        height: 100px;
+      }
+      #teamA {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+      #teamB {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+      #scoreA {
+        font-size: 3em;
+      }
+      #scoreB {
+        font-size: 3em;
+      }
+      #timestamp {
+        font-size: small;
+      }
+      #liveTime {
+        font-size: small;
+      }
+      #liveTimerOn {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Ottelun valinta</h1>
+    <input
+      type="text"
+      id="api_key"
+      value=""
+      placeholder="Torneopal API key"
+      onchange="apiKeyChanged()"
+    />
+    <select id="season_id" onchange="populateCompetitions()">
+      <option value="valitse" default>Valitse kausi</option>
+    </select>
+    <select id="competition_id" onchange="populateCategories()">
+      <option value="valitse" default>Valitse alue</option>
+    </select>
+    <select id="category_id" onchange="populateTeams()">
+      <option value="valitse" default>Valitse sarja</option>
+    </select>
+    <select id="team_id" onchange="populateMatches()">
+      <option value="valitse" default>Valitse joukkue</option>
+    </select>
+    <select id="match_id" onchange="matchChanged()">
+      <option value="valitse">Valitse ottelu</option>
+    </select>
+    <div id="tulostaulu">
+      <img id="teamAlogo" src="" />
+      <img id="teamBlogo" src="" />
+      <div id="teamB"></div>
+      <div id="teamA"></div>
+      <div id="teamB"></div>
+      <div id="scoreA"></div>
+      <div id="scoreB"></div>
+      <div id="period"></div>
+      <div id="timestamp"></div>
+      <div id="liveTime"></div>
+      <div id="liveTimerOn"></div>
+    </div>
+    <script>
+      let poll = null;
+
+      document.addEventListener("DOMContentLoaded", async function () {
+        await populateContextFromUrl();
+        const { apiKey } = getContext("api_key");
+        if (apiKey) {
+          apiKeyChanged();
+        }
+      });
+
+      async function apiKeyChanged() {
+        const { apiKey } = getContext("api_key");
+        await populateSeasons();
+        await populateCompetitions();
+        await populateCategories();
+        await populateTeams();
+        await populateMatches();
+      }
+
+      function populateContextFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const params = {};
+        for (const [key, value] of urlParams) {
+          params[key] = value;
+          setContext(key, value);
+        }
+        return params;
+      }
+
+      function matchChanged() {
+        const { match_id } = getContext("match_id");
+        // update page url query params to include the new key and value
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set("match_id", match_id);
+        history.pushState({}, "", `${location.pathname}?${urlParams}`);
+        initScoreboard();
+      }
+
+      function setContext(key, value) {
+        const element = document.getElementById(key);
+        if (element) {
+          element.value = value;
+        } else {
+          console.error("Element not found", key);
+        }
+      }
+
+      function getContext(...paramNames) {
+        const context = {};
+        paramNames.forEach((paramName) => {
+          const value = document.getElementById(paramName).value;
+          if (value && value !== "valitse") {
+            context[paramName] = value;
+          }
+        });
+        return context;
+      }
+
+      async function populateSeasons() {
+        const data = await getTorneopal("Seasons");
+
+        populateSelect(
+          "season_id",
+          data.seasons.map((season) => ({
+            id: season.season_id,
+            name: season.season_description,
+            default: season.season_description === "2023-2024",
+          }))
+        );
+      }
+
+      async function populateCompetitions() {
+        const data = await getTorneopal(
+          "Competitions",
+          getContext("season_id")
+        );
+
+        populateSelect(
+          "competition_id",
+          data.competitions.map((competition) => ({
+            id: competition.competition_id,
+            name: competition.competition_name,
+            default:
+              competition.competition_name ===
+              "Valtakunnalliset sarjat 2023-24",
+          }))
+        );
+      }
+
+      function populateCategories() {
+        return getTorneopal(
+          "Categories",
+          getContext("season_id", "competition_id")
+        ).then((data) => {
+          console.log("Categories", data);
+          populateSelect(
+            "category_id",
+            data.categories.map((category) => ({
+              id: category.category_id,
+              name: category.category_name,
+              default: category.category_name === "Miesten Divari",
+            }))
+          );
+        });
+      }
+
+      function populateTeams() {
+        return getTorneopal(
+          "Teams",
+          getContext("competition_id", "category_id")
+        ).then((data) => {
+          console.log("Teams", data);
+          populateSelect(
+            "team_id",
+            data.teams.map((team) => ({
+              id: team.team_id,
+              name: team.team_name,
+              default: team.team_name === "O2-Jyväskylä",
+            }))
+          );
+        });
+      }
+
+      function populateMatches() {
+        getTorneopal(
+          "Matches",
+          getContext("season_id", "competition_id", "category_id", "team_id")
+        ).then((data) => {
+          console.log("Matches", data);
+          populateSelect("match_id", [
+            {
+              id: "valitse",
+              name: "Valitse ottelu",
+              default: true,
+            },
+            ...data.matches.map((match) => ({
+              id: match.match_id,
+              name: `${match.date} ${match.team_A_abbrevation} - ${match.team_B_abbrevation}`,
+            })),
+          ]);
+        });
+      }
+
+      function populateSelect(selectId, options) {
+        console.log("populateSelect", selectId, options);
+        select = document.getElementById(selectId);
+        select.innerHTML = "";
+        options.forEach((option) => {
+          const optionElement = document.createElement("option");
+          optionElement.value = option.id;
+          optionElement.selected = option.default;
+          optionElement.textContent = option.name;
+          select.appendChild(optionElement);
+        });
+      }
+
+      function initScoreboard() {
+        const matchId = document.getElementById("match_id").value;
+        if (matchId !== "valitse") {
+          getTorneopal("Match", { match_id: matchId }).then((data) => {
+            console.log("Match", data);
+            const match = data.match;
+            const teamA = match.team_A_abbrevation || match.team_A_name;
+            const teamB = match.team_B_abbrevation || match.team_B_name;
+            const scoreA = match.fs_A;
+            const scoreB = match.fs_B;
+            updateMatchInfo({
+              teamA,
+              teamAlogo: match.club_A_crest,
+              teamB,
+              teamBlogo: match.club_B_crest,
+              period: match.live_period || match.periods_played,
+              scoreA,
+              scoreB,
+              timestamp: match.timestamp,
+            });
+
+            if (poll) {
+              clearInterval(poll);
+            }
+            poll = setInterval(() => {
+              getTorneopal("Score", { match_id: matchId }).then((data) => {
+                updateMatchInfo({
+                  scoreA: data.score.fs_A,
+                  scoreB: data.score.fs_B,
+                  timestamp: data.score.timestamp,
+                  period: data.score.live_period || data.score.periods_played,
+                  liveTime: data.score.live_time,
+                  liveTimerOn: data.score.live_timer_on,
+                });
+              });
+            }, 5000);
+          });
+        }
+      }
+
+      function updateMatchInfo(info) {
+        for (const key in info) {
+          if (Object.hasOwnProperty.call(info, key)) {
+            const value = info[key];
+            console.log(key, value);
+            if (key.endsWith("logo")) {
+              document.getElementById(key).src = value;
+            } else {
+              document.getElementById(key).textContent = value;
+            }
+          }
+        }
+      }
+
+      async function getTorneopal(resource, params) {
+        params = { ...params, ...getContext("api_key") };
+        const urlParams = new URLSearchParams(params);
+        const url = `https://salibandy.api.torneopal.com/taso/rest/get${resource}?${urlParams}`;
+        return fetch(url)
+          .then((response) => response.json())
+          .catch((error) => console.error(error));
+      }
+    </script>
+  </body>
+</html>
