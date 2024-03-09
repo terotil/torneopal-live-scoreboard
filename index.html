@@ -5,8 +5,11 @@
     <style>
       body {
         font-family: Arial, sans-serif;
-        color: lightgray;
+        color: lightgoldenrodyellow;
         background-color: black;
+      }
+      #otteluvalinta {
+        display: none;
       }
       input,
       select {
@@ -14,100 +17,156 @@
         margin: 10px;
       }
       #tulostaulu {
+        display: none;
+        width: 100%;
+        height: 10vw;
+        grid-template-columns: 2fr 4fr 2fr 4fr 2fr;
+        grid-template-rows: 2fr 3fr 2fr;
+      }
+      #tulostaulu > div {
         display: flex;
-        flex-direction: column;
         align-items: center;
+        justify-content: center;
+        z-index: 2;
       }
-      #teamAlogo {
-        width: 100px;
-        height: 100px;
+      #teamAlogoWrap {
+        grid-row: 1 / span 3;
+        grid-column: 1;
       }
+      #teamBlogoWrap {
+        grid-row: 1 / span 3;
+        grid-column: 5;
+      }
+      #teamAlogo,
       #teamBlogo {
-        width: 100px;
-        height: 100px;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
       }
       #teamA {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
+        grid-row: 2;
+        grid-column: 2;
       }
       #teamB {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
+        grid-row: 2;
+        grid-column: 4;
       }
-      #scoreA {
-        font-size: 3em;
+      #teamA,
+      #teamB {
+        font-size: 3vw;
       }
-      #scoreB {
-        font-size: 3em;
-      }
-      #timestamp {
-        font-size: small;
+      #score {
+        grid-row: 2;
+        grid-column: 3;
+        font-size: 3vw;
       }
       #liveTime {
-        font-size: small;
+        grid-row: 3;
+        grid-column: 3;
+        font-size: 1.5vw;
+        background-color: oldlace;
+        color: darkslategray;
+        border-radius: 0 0 2vw 2vw;
       }
-      #liveTimerOn {
+      #periodWrap {
+        grid-row: 1;
+        grid-column: 3;
+        font-size: 1.5vw;
+        background-color: oldlace;
+        color: darkslategray;
+        border-radius: 2vw 2vw 0 0;
+      }
+      #tulostaulu > #timestamp {
+        font-size: small;
         display: none;
+      }
+      #tulostaulu > #liveTimerOn {
+        font-size: small;
+        display: none;
+      }
+      #tulostaulu > #bgBar {
+        grid-row: 2;
+        grid-column: 1 / span 5;
+        background-color: darkorange;
+        opacity: 0.5;
+        z-index: 1;
       }
     </style>
   </head>
   <body>
-    <h1>Ottelun valinta</h1>
-    <input
-      type="text"
-      id="api_key"
-      value=""
-      placeholder="Torneopal API key"
-      onchange="apiKeyChanged()"
-    />
-    <select id="season_id" onchange="populateCompetitions()">
-      <option value="valitse" default>Valitse kausi</option>
-    </select>
-    <select id="competition_id" onchange="populateCategories()">
-      <option value="valitse" default>Valitse alue</option>
-    </select>
-    <select id="category_id" onchange="populateTeams()">
-      <option value="valitse" default>Valitse sarja</option>
-    </select>
-    <select id="team_id" onchange="populateMatches()">
-      <option value="valitse" default>Valitse joukkue</option>
-    </select>
-    <select id="match_id" onchange="matchChanged()">
-      <option value="valitse">Valitse ottelu</option>
-    </select>
+    <div id="otteluvalinta">
+      <h1>Ottelun valinta</h1>
+      <input
+        type="text"
+        id="api_key"
+        value=""
+        placeholder="Torneopal API key"
+        onchange="apiKeyChanged()"
+      />
+      <select id="season_id" onchange="populateCompetitions()">
+        <option value="valitse" default>Valitse kausi</option>
+      </select>
+      <select id="competition_id" onchange="populateCategories()">
+        <option value="valitse" default>Valitse alue</option>
+      </select>
+      <select id="category_id" onchange="populateTeams()">
+        <option value="valitse" default>Valitse sarja</option>
+      </select>
+      <select id="team_id" onchange="populateMatches()">
+        <option value="valitse" default>Valitse joukkue</option>
+      </select>
+      <select id="match_id" onchange="matchChanged()">
+        <option value="valitse">Valitse ottelu</option>
+      </select>
+    </div>
     <div id="tulostaulu">
-      <img id="teamAlogo" src="" />
-      <img id="teamBlogo" src="" />
-      <div id="teamB"></div>
+      <div id="teamAlogoWrap">
+        <img id="teamAlogo" src="" />
+      </div>
+      <div id="teamBlogoWrap">
+        <img id="teamBlogo" src="" />
+      </div>
       <div id="teamA"></div>
       <div id="teamB"></div>
-      <div id="scoreA"></div>
-      <div id="scoreB"></div>
-      <div id="period"></div>
+      <div id="score">
+        <span id="scoreA"></span>
+        &nbsp;-&nbsp;
+        <span id="scoreB"></span>
+      </div>
+      <div id="periodWrap"><span id="period"></span>. erä</div>
       <div id="timestamp"></div>
       <div id="liveTime"></div>
       <div id="liveTimerOn"></div>
+      <div id="bgBar"></div>
     </div>
     <script>
       let poll = null;
 
       document.addEventListener("DOMContentLoaded", async function () {
-        await populateContextFromUrl();
-        const { apiKey } = getContext("api_key");
-        if (apiKey) {
+        const context = await populateContextFromUrl();
+        if (context.match_id) {
+          setMatch(context.match_id);
+        } else if (context.api_key) {
           apiKeyChanged();
         }
       });
 
       async function apiKeyChanged() {
-        const { apiKey } = getContext("api_key");
         await populateSeasons();
         await populateCompetitions();
         await populateCategories();
         await populateTeams();
         await populateMatches();
+        showMatchSelection();
+      }
+
+      function showMatchSelection(show = true) {
+        document.getElementById("tulostaulu").style.display = show
+          ? "none"
+          : "grid";
+        document.getElementById("otteluvalinta").style.display = show
+          ? "block"
+          : "none";
       }
 
       function populateContextFromUrl() {
@@ -122,11 +181,15 @@
 
       function matchChanged() {
         const { match_id } = getContext("match_id");
+        setMatch(match_id);
+      }
+
+      function setMatch(match_id) {
         // update page url query params to include the new key and value
         const urlParams = new URLSearchParams(window.location.search);
         urlParams.set("match_id", match_id);
         history.pushState({}, "", `${location.pathname}?${urlParams}`);
-        initScoreboard();
+        initScoreboard(match_id);
       }
 
       function setContext(key, value) {
@@ -247,43 +310,49 @@
         });
       }
 
-      function initScoreboard() {
-        const matchId = document.getElementById("match_id").value;
+      function initScoreboard(matchId) {
         if (matchId !== "valitse") {
-          getTorneopal("Match", { match_id: matchId }).then((data) => {
-            console.log("Match", data);
-            const match = data.match;
-            const teamA = match.team_A_abbrevation || match.team_A_name;
-            const teamB = match.team_B_abbrevation || match.team_B_name;
-            const scoreA = match.fs_A;
-            const scoreB = match.fs_B;
-            updateMatchInfo({
-              teamA,
-              teamAlogo: match.club_A_crest,
-              teamB,
-              teamBlogo: match.club_B_crest,
-              period: match.live_period || match.periods_played,
-              scoreA,
-              scoreB,
-              timestamp: match.timestamp,
-            });
-
-            if (poll) {
-              clearInterval(poll);
-            }
-            poll = setInterval(() => {
-              getTorneopal("Score", { match_id: matchId }).then((data) => {
-                updateMatchInfo({
-                  scoreA: data.score.fs_A,
-                  scoreB: data.score.fs_B,
-                  timestamp: data.score.timestamp,
-                  period: data.score.live_period || data.score.periods_played,
-                  liveTime: data.score.live_time,
-                  liveTimerOn: data.score.live_timer_on,
-                });
+          getTorneopal("Match", { match_id: matchId })
+            .then((data) => {
+              console.log("Match", data);
+              const match = data.match;
+              const teamA = match.team_A_abbrevation || match.team_A_name;
+              const teamB = match.team_B_abbrevation || match.team_B_name;
+              const scoreA = match.fs_A;
+              const scoreB = match.fs_B;
+              updateMatchInfo({
+                teamA,
+                teamAlogo: match.club_A_crest,
+                teamB,
+                teamBlogo: match.club_B_crest,
+                scoreA,
+                scoreB,
+                timestamp: match.timestamp,
+                period: match.live_period || match.periods_played,
+                liveTime: match.live_time,
               });
-            }, 5000);
-          });
+
+              if (poll) {
+                clearInterval(poll);
+              }
+              poll = setInterval(() => {
+                getTorneopal("Score", { match_id: matchId }).then((data) => {
+                  updateMatchInfo({
+                    scoreA: data.score.fs_A,
+                    scoreB: data.score.fs_B,
+                    timestamp: data.score.timestamp,
+                    period: data.score.live_period || data.score.periods_played,
+                    liveTime: data.score.live_time,
+                    liveTimerOn: data.score.live_timer_on,
+                  });
+                });
+              }, 5000);
+            })
+            .then(() => {
+              showMatchSelection(false);
+            });
+        } else {
+          console.error("Match not provided");
         }
       }
 

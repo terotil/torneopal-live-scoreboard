@@ -21,8 +21,6 @@ Tehtyäsi otteluvalinnan, (toistaiseksi käyttökelvottoman ruma) tulostaulu ilm
 
 ## Jatkokehitys
 
-- Jos `match_id` löytyy URL-parametreista, avaa suoraan tulostaulu
-- Tulostaulun tyylittely niin, että se on käyttökelpoinen OBS-overlayna
 - Alusta otteluvalitsimen tila URL-parametreista
 - Päivitä otteluvalitsimen tilaa URL-parametreihin
 - Erätauon näyttö
