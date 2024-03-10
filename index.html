@@ -63,15 +63,31 @@
       #liveTime {
         grid-row: 3;
         grid-column: 3;
-        font-size: 1.5vw;
+        font-size: 2vw;
         background-color: oldlace;
         color: darkslategray;
         border-radius: 0 0 2vw 2vw;
       }
+      @keyframes colorPulse {
+        0% {
+          color: darkslategray; /* replace with your first color */
+        }
+        50% {
+          color: red; /* replace with your second color */
+        }
+        100% {
+          color: darkslategray; /* replace with your first color */
+        }
+      }
+      #liveTime.liveTimerOn {
+        color: darkslategray;
+        border-radius: 0 0 2vw 2vw;
+        animation: colorPulse 1s infinite;
+      }
       #periodWrap {
         grid-row: 1;
         grid-column: 3;
-        font-size: 1.5vw;
+        font-size: 2vw;
         background-color: oldlace;
         color: darkslategray;
         border-radius: 2vw 2vw 0 0;
@@ -140,6 +156,7 @@
       <div id="bgBar"></div>
     </div>
     <script>
+      const SCORE_POLL_INTERVAL = 5000;
       let poll = null;
 
       document.addEventListener("DOMContentLoaded", async function () {
@@ -331,7 +348,8 @@
                 scoreB,
                 timestamp: match.timestamp,
                 period: match.live_period || match.periods_played,
-                liveTime: match.live_time,
+                liveTime: match.live_time_mmss,
+                liveTimerOn: match.live_timer_on === "1",
               });
 
               if (poll) {
@@ -344,11 +362,11 @@
                     scoreB: data.score.fs_B,
                     timestamp: data.score.timestamp,
                     period: data.score.live_period || data.score.periods_played,
-                    liveTime: data.score.live_time,
-                    liveTimerOn: data.score.live_timer_on,
+                    liveTime: data.score.live_time_mmss,
+                    liveTimerOn: data.score.live_timer_on === "1",
                   });
                 });
-              }, 5000);
+              }, SCORE_POLL_INTERVAL);
             })
             .then(() => {
               showMatchSelection(false);
@@ -362,9 +380,12 @@
         for (const key in info) {
           if (Object.hasOwnProperty.call(info, key)) {
             const value = info[key];
-            console.log(key, value);
             if (key.endsWith("logo")) {
               document.getElementById(key).src = value;
+            } else if (key === "liveTimerOn") {
+              document.getElementById("liveTime").className = value
+                ? "liveTimerOn"
+                : "";
             } else {
               document.getElementById(key).textContent = value;
             }
