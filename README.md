@@ -35,9 +35,12 @@ Laita [tikettiä](https://github.com/terotil/torneopal-live-scoreboard/issues) j
 
 Jatkokehityssuunnitelmissa
 
+- Ottelutunnisteen syöttö kenttään (otteluvalitsimen käytön sijaan)
+- Ottelutunnisteen poiminta ottelun tulospalvelu.salibandy.fi-osoitteesta (otteluvalitsimen käytön sijaan)
+- Pelikello
+- Tulosgrafiikan visuaalisen ilmeen mukauttaminen
 - Testiaineisto ja testiaineiston ajo
 - Alusta otteluvalitsimen tila URL-parametreista
 - Päivitä otteluvalitsimen tilaa URL-parametreihin
 - Erätauon näyttö
-- Pelikello
 - Jäähykello
