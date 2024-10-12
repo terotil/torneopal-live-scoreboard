@@ -119,6 +119,13 @@
         placeholder="Torneopal API key"
         onchange="apiKeyChanged()"
       />
+      <input
+        type="text"
+        id="match_url"
+        value=""
+        placeholder="Pelin URL tulospalvelusta"
+        onchange="matchUrlChanged()"
+      />
       <select id="season_id" onchange="populateCompetitions()">
         <option value="valitse" default>Valitse kausi</option>
       </select>
@@ -171,12 +178,24 @@
       });
 
       async function apiKeyChanged() {
+        const { api_key } = getContext("api_key");
+        setUrlParams("api_key", api_key);
         await populateSeasons();
         await populateCompetitions();
         await populateCategories();
         await populateTeams();
         await populateMatches();
         showMatchSelection();
+      }
+
+      function matchUrlChanged() {
+        const url = document.getElementById("match_url").value;
+        const matchId = url.match(/match\/(\d+)\//);
+        if (matchId) {
+          setMatch(matchId[1]);
+        } else {
+          console.error("Invalid match URL", url);
+        }
       }
 
       function showMatchSelection(show = true) {
@@ -204,11 +223,15 @@
       }
 
       function setMatch(match_id) {
-        // update page url query params to include the new key and value
-        const urlParams = new URLSearchParams(window.location.search);
-        urlParams.set("match_id", match_id);
-        history.pushState({}, "", `${location.pathname}?${urlParams}`);
+        setUrlParams("match_id", match_id);
         initScoreboard(match_id);
+      }
+
+      function setUrlParams(key, value) {
+        // update page url query params to include the new match_id
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set(key, value);
+        history.pushState({}, "", `${location.pathname}?${urlParams}`);
       }
 
       function setContext(key, value) {
