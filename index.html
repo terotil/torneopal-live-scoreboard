@@ -3,8 +3,18 @@
   <head>
     <title>Tulostaulu</title>
     <style>
+      @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+      html {
+        font-family: sans-serif;
+        font-weight: bold;
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+      }
+      :root {
+        --statbox-bg: #ffc107;
+      }
       body {
-        font-family: Arial, sans-serif;
+        font-family: 'Chakra Petch',Arial,Helvetica,sans-serif;
         color: lightgoldenrodyellow;
         background-color: black;
       }
@@ -64,7 +74,7 @@
         grid-row: 3;
         grid-column: 3;
         font-size: 2vw;
-        background-color: oldlace;
+        background-color: var(--statbox-bg);
         color: darkslategray;
         border-radius: 0 0 2vw 2vw;
       }
@@ -88,7 +98,7 @@
         grid-row: 1;
         grid-column: 3;
         font-size: 2vw;
-        background-color: oldlace;
+        background-color: var(--statbox-bg);
         color: darkslategray;
         border-radius: 2vw 2vw 0 0;
       }
@@ -103,7 +113,7 @@
       #tulostaulu > #bgBar {
         grid-row: 2;
         grid-column: 1 / span 5;
-        background-color: darkorange;
+        background-color: red;
         opacity: 0.5;
         z-index: 1;
       }
@@ -156,7 +166,7 @@
         &nbsp;-&nbsp;
         <span id="scoreB"></span>
       </div>
-      <div id="periodWrap"><span id="period"></span>. erä</div>
+      <div id="periodWrap"><span id="period"></span></div>
       <div id="timestamp"></div>
       <div id="liveTime"></div>
       <div id="liveTimerOn"></div>
@@ -370,7 +380,8 @@
                 scoreA,
                 scoreB,
                 timestamp: match.timestamp,
-                period: match.live_period || match.periods_played,
+                period: match.live_period,
+                status: match.status,
                 liveTime: match.live_time_mmss,
                 liveTimerOn: match.live_timer_on === "1",
               });
@@ -381,10 +392,11 @@
               poll = setInterval(() => {
                 getTorneopal("Score", { match_id: matchId }).then((data) => {
                   updateMatchInfo({
-                    scoreA: data.score.fs_A,
-                    scoreB: data.score.fs_B,
+                    scoreA: data.score.fs_A || data.score.live_A,
+                    scoreB: data.score.fs_B || data.score.live_B,
                     timestamp: data.score.timestamp,
-                    period: data.score.live_period || data.score.periods_played,
+                    period: data.score.live_period,
+                    status: data.score.status,
                     liveTime: data.score.live_time_mmss,
                     liveTimerOn: data.score.live_timer_on === "1",
                   });
@@ -400,6 +412,16 @@
       }
 
       function updateMatchInfo(info) {
+        if (info.status === "Fixture") {
+          // Not started yet
+          info.period = "";
+          info.liveTime = "";
+        } else if (info.status === "Played") {
+          info.period = "lopputulos";
+        } else {
+          info.period = `${info.period}. erä`;
+        }
+        delete info.status;
         for (const key in info) {
           if (Object.hasOwnProperty.call(info, key)) {
             const value = info[key];
