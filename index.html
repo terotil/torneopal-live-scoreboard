@@ -198,6 +198,8 @@
         showMatchSelection();
       }
 
+      // Called from input onchange
+      // eslint-disable-next-line no-unused-vars
       function matchUrlChanged() {
         const url = document.getElementById('match_url').value;
         const matchId = url.match(/match\/(\d+)\//);
@@ -227,6 +229,8 @@
         return params;
       }
 
+      // Called from input onchange
+      // eslint-disable-next-line no-unused-vars
       function matchChanged() {
         const { match_id } = getContext('match_id');
         setMatch(match_id);
