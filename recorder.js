@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fs = require('fs');
 
 const RATE = 5000; // milliseconds
 const USAGE = `
@@ -23,7 +23,7 @@ async function getTorneopal(resource, params) {
 // Check mandatory arguments
 let error = false;
 if (process.argv.length < 4) {
-  error = "Missing arguments";
+  error = 'Missing arguments';
 } else {
   api_key = process.argv[2];
   match_id = process.argv[3];
@@ -43,8 +43,8 @@ if (error) {
 
 // call getTorneopal every 10 seconds and write result json to a file with timestamp as the filename
 setInterval(async () => {
-  const timestamp = new Date().toISOString().replace(/:/g, "-");
-  const result = await getTorneopal("Score", {
+  const timestamp = new Date().toISOString().replace(/:/g, '-');
+  const result = await getTorneopal('Score', {
     api_key,
     match_id,
   });

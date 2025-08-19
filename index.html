@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>Tulostaulu</title>
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap");
+      @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
       html {
         font-family: sans-serif;
         font-weight: bold;
@@ -14,7 +14,7 @@
         --statbox-bg: #ffc107;
       }
       body {
-        font-family: "Chakra Petch", Arial, Helvetica, sans-serif;
+        font-family: 'Chakra Petch', Arial, Helvetica, sans-serif;
         color: lightgoldenrodyellow;
         background-color: black;
       }
@@ -176,7 +176,7 @@
       const SCORE_POLL_INTERVAL = 5000;
       let poll = null;
 
-      document.addEventListener("DOMContentLoaded", async function () {
+      document.addEventListener('DOMContentLoaded', async function () {
         const context = await populateContextFromUrl();
         if (context.match_id) {
           setMatch(context.match_id);
@@ -188,8 +188,8 @@
       });
 
       async function apiKeyChanged() {
-        const { api_key } = getContext("api_key");
-        setUrlParams("api_key", api_key);
+        const { api_key } = getContext('api_key');
+        setUrlParams('api_key', api_key);
         await populateSeasons();
         await populateCompetitions();
         await populateCategories();
@@ -199,22 +199,22 @@
       }
 
       function matchUrlChanged() {
-        const url = document.getElementById("match_url").value;
+        const url = document.getElementById('match_url').value;
         const matchId = url.match(/match\/(\d+)\//);
         if (matchId) {
           setMatch(matchId[1]);
         } else {
-          console.error("Invalid match URL", url);
+          console.error('Invalid match URL', url);
         }
       }
 
       function showMatchSelection(show = true) {
-        document.getElementById("tulostaulu").style.display = show
-          ? "none"
-          : "grid";
-        document.getElementById("otteluvalinta").style.display = show
-          ? "block"
-          : "none";
+        document.getElementById('tulostaulu').style.display = show
+          ? 'none'
+          : 'grid';
+        document.getElementById('otteluvalinta').style.display = show
+          ? 'block'
+          : 'none';
       }
 
       function populateContextFromUrl() {
@@ -228,12 +228,12 @@
       }
 
       function matchChanged() {
-        const { match_id } = getContext("match_id");
+        const { match_id } = getContext('match_id');
         setMatch(match_id);
       }
 
       function setMatch(match_id) {
-        setUrlParams("match_id", match_id);
+        setUrlParams('match_id', match_id);
         initScoreboard(match_id);
       }
 
@@ -241,7 +241,7 @@
         // update page url query params to include the new match_id
         const urlParams = new URLSearchParams(window.location.search);
         urlParams.set(key, value);
-        history.pushState({}, "", `${location.pathname}?${urlParams}`);
+        history.pushState({}, '', `${location.pathname}?${urlParams}`);
       }
 
       function setContext(key, value) {
@@ -249,7 +249,7 @@
         if (element) {
           element.value = value;
         } else {
-          console.error("Element not found", key);
+          console.error('Element not found', key);
         }
       }
 
@@ -257,7 +257,7 @@
         const context = {};
         paramNames.forEach((paramName) => {
           const value = document.getElementById(paramName).value;
-          if (value && value !== "valitse") {
+          if (value && value !== 'valitse') {
             context[paramName] = value;
           }
         });
@@ -265,48 +265,48 @@
       }
 
       async function populateSeasons() {
-        const data = await getTorneopal("Seasons");
+        const data = await getTorneopal('Seasons');
 
         populateSelect(
-          "season_id",
+          'season_id',
           data.seasons.map((season) => ({
             id: season.season_id,
             name: season.season_description,
-            default: season.season_description === "2023-2024",
+            default: season.season_description === '2023-2024',
           }))
         );
       }
 
       async function populateCompetitions() {
         const data = await getTorneopal(
-          "Competitions",
-          getContext("season_id")
+          'Competitions',
+          getContext('season_id')
         );
 
         populateSelect(
-          "competition_id",
+          'competition_id',
           data.competitions.map((competition) => ({
             id: competition.competition_id,
             name: competition.competition_name,
             default:
               competition.competition_name ===
-              "Valtakunnalliset sarjat 2023-24",
+              'Valtakunnalliset sarjat 2023-24',
           }))
         );
       }
 
       function populateCategories() {
         return getTorneopal(
-          "Categories",
-          getContext("season_id", "competition_id")
+          'Categories',
+          getContext('season_id', 'competition_id')
         ).then((data) => {
-          console.log("Categories", data);
+          console.log('Categories', data);
           populateSelect(
-            "category_id",
+            'category_id',
             data.categories.map((category) => ({
               id: category.category_id,
               name: category.category_name,
-              default: category.category_name === "Miesten Divari",
+              default: category.category_name === 'Miesten Divari',
             }))
           );
         });
@@ -314,16 +314,16 @@
 
       function populateTeams() {
         return getTorneopal(
-          "Teams",
-          getContext("competition_id", "category_id")
+          'Teams',
+          getContext('competition_id', 'category_id')
         ).then((data) => {
-          console.log("Teams", data);
+          console.log('Teams', data);
           populateSelect(
-            "team_id",
+            'team_id',
             data.teams.map((team) => ({
               id: team.team_id,
               name: team.team_name,
-              default: team.team_name === "O2-Jyväskylä",
+              default: team.team_name === 'O2-Jyväskylä',
             }))
           );
         });
@@ -331,14 +331,14 @@
 
       function populateMatches() {
         getTorneopal(
-          "Matches",
-          getContext("season_id", "competition_id", "category_id", "team_id")
+          'Matches',
+          getContext('season_id', 'competition_id', 'category_id', 'team_id')
         ).then((data) => {
-          console.log("Matches", data);
-          populateSelect("match_id", [
+          console.log('Matches', data);
+          populateSelect('match_id', [
             {
-              id: "valitse",
-              name: "Valitse ottelu",
+              id: 'valitse',
+              name: 'Valitse ottelu',
               default: true,
             },
             ...data.matches.map((match) => ({
@@ -350,11 +350,11 @@
       }
 
       function populateSelect(selectId, options) {
-        console.log("populateSelect", selectId, options);
+        console.log('populateSelect', selectId, options);
         select = document.getElementById(selectId);
-        select.innerHTML = "";
+        select.innerHTML = '';
         options.forEach((option) => {
-          const optionElement = document.createElement("option");
+          const optionElement = document.createElement('option');
           optionElement.value = option.id;
           optionElement.selected = option.default;
           optionElement.textContent = option.name;
@@ -363,10 +363,10 @@
       }
 
       function initScoreboard(matchId) {
-        if (matchId !== "valitse") {
-          getTorneopal("Match", { match_id: matchId })
+        if (matchId !== 'valitse') {
+          getTorneopal('Match', { match_id: matchId })
             .then((data) => {
-              console.log("Match", data);
+              console.log('Match', data);
               const match = data.match;
               const teamA = match.team_A_abbrevation || match.team_A_name;
               const teamB = match.team_B_abbrevation || match.team_B_name;
@@ -383,14 +383,14 @@
                 period: match.live_period,
                 status: match.status,
                 liveTime: match.live_time_mmss,
-                liveTimerOn: match.live_timer_on === "1",
+                liveTimerOn: match.live_timer_on === '1',
               });
 
               if (poll) {
                 clearInterval(poll);
               }
               poll = setInterval(() => {
-                getTorneopal("Score", { match_id: matchId }).then((data) => {
+                getTorneopal('Score', { match_id: matchId }).then((data) => {
                   updateMatchInfo({
                     scoreA: data.score.fs_A || data.score.live_A,
                     scoreB: data.score.fs_B || data.score.live_B,
@@ -398,7 +398,7 @@
                     period: data.score.live_period,
                     status: data.score.status,
                     liveTime: data.score.live_time_mmss,
-                    liveTimerOn: data.score.live_timer_on === "1",
+                    liveTimerOn: data.score.live_timer_on === '1',
                   });
                 });
               }, SCORE_POLL_INTERVAL);
@@ -407,17 +407,17 @@
               showMatchSelection(false);
             });
         } else {
-          console.error("Match not provided");
+          console.error('Match not provided');
         }
       }
 
       function updateMatchInfo(info) {
-        if (info.status === "Fixture") {
+        if (info.status === 'Fixture') {
           // Not started yet
-          info.period = "";
-          info.liveTime = "";
-        } else if (info.status === "Played") {
-          info.period = "lopputulos";
+          info.period = '';
+          info.liveTime = '';
+        } else if (info.status === 'Played') {
+          info.period = 'lopputulos';
         } else {
           info.period = `${info.period}. erä`;
         }
@@ -425,12 +425,12 @@
         for (const key in info) {
           if (Object.hasOwnProperty.call(info, key)) {
             const value = info[key];
-            if (key.endsWith("logo")) {
+            if (key.endsWith('logo')) {
               document.getElementById(key).src = value;
-            } else if (key === "liveTimerOn") {
-              document.getElementById("liveTime").className = value
-                ? "liveTimerOn"
-                : "";
+            } else if (key === 'liveTimerOn') {
+              document.getElementById('liveTime').className = value
+                ? 'liveTimerOn'
+                : '';
             } else {
               document.getElementById(key).textContent = value;
             }
@@ -439,7 +439,7 @@
       }
 
       async function getTorneopal(resource, params) {
-        params = { ...params, ...getContext("api_key") };
+        params = { ...params, ...getContext('api_key') };
         const urlParams = new URLSearchParams(params);
         const url = `https://salibandy.api.torneopal.com/taso/rest/get${resource}?${urlParams}`;
         return fetch(url)
