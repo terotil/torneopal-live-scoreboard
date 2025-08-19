@@ -33,6 +33,8 @@ Tehtyäsi otteluvalinnan, tulostaulu ilmestyy näkyviin. Nyt voit kopioida osoit
 
 Laita [tikettiä](https://github.com/terotil/torneopal-live-scoreboard/issues) jos sinulla on idea, ongelma, vikahavainto tai kysymys. Parannuksia voi laittaa myös suoraan pull requestina.
 
+Katso lisätietoja [kehittäjäohjeista](CONTRIBUTING.md).
+
 Jatkokehityssuunnitelmissa
 
 - Ottelutunnisteen syöttö kenttään (otteluvalitsimen käytön sijaan)

@@ -1,0 +1,6 @@
+# Data files and samples
+*.json
+local-samples/
+
+# Dependencies
+node_modules/

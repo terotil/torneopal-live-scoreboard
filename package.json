@@ -5,11 +5,22 @@
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "http-server"
+    "start": "http-server",
+    "lint": "eslint *.js *.html",
+    "lint:fix": "eslint *.js *.html --fix",
+    "format:check": "prettier --check *.js *.html"
   },
   "author": "Tero Tilus",
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "http-server": "^14.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-html": "^8.0.0",
+    "globals": "^16.3.0",
+    "prettier": "^3.0.0"
   }
 }
