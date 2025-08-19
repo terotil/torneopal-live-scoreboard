@@ -355,7 +355,7 @@
 
       function populateSelect(selectId, options) {
         console.log('populateSelect', selectId, options);
-        select = document.getElementById(selectId);
+        let select = document.getElementById(selectId);
         select.innerHTML = '';
         options.forEach((option) => {
           const optionElement = document.createElement('option');
