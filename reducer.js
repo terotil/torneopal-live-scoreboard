@@ -52,9 +52,10 @@ const isInteresting = (key) => {
 const compareJsonObjects = (obj1, obj2) => {
   const keys1 = Object.keys(obj1.score).filter(isInteresting);
   const keys2 = Object.keys(obj2.score).filter(isInteresting);
+  const allKeys = [...new Set([...keys1, ...keys2])];
 
   let returnValue = false;
-  for (const key of keys1) {
+  for (const key of allKeys) {
     if (obj1.score[key] !== obj2.score[key]) {
       log(`Diff at ${key}: ${obj1.score[key]} vs ${obj2.score[key]}`);
       returnValue = true;
