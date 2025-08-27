@@ -51,7 +51,11 @@ function scheduleSave() {
   if (saveTimeoutId) return;
   saveTimeoutId = setTimeout(async () => {
     try {
-      await fs.writeFile(SCORE_FILE, JSON.stringify(scoreFileState, null, 2) + '\n', 'utf8');
+      await fs.writeFile(
+        SCORE_FILE,
+        JSON.stringify(scoreFileState, null, 2) + '\n',
+        'utf8'
+      );
     } catch (e) {
       // Show error but keep running
       process.stderr.write(`\nTallennus epäonnistui: ${e.message}\n`);
@@ -72,11 +76,13 @@ function setTimerRunning(running) {
     // Start timer: store current time as base and reset base seconds
     liveTimerBaseSeconds = seconds;
     liveTimerStartTime = Date.now();
-    
+
     liveTimerId = setInterval(() => {
-      const elapsedSeconds = Math.floor((Date.now() - liveTimerStartTime) / 1000);
+      const elapsedSeconds = Math.floor(
+        (Date.now() - liveTimerStartTime) / 1000
+      );
       const newSeconds = liveTimerBaseSeconds + elapsedSeconds;
-      
+
       // Only update and save if seconds actually changed
       if (newSeconds !== seconds) {
         seconds = newSeconds;
@@ -94,7 +100,10 @@ function setTimerRunning(running) {
 }
 
 function setScore(key, delta) {
-  const val = Math.max(0, parseInt(scoreFileState.score[key] || '0', 10) + delta);
+  const val = Math.max(
+    0,
+    parseInt(scoreFileState.score[key] || '0', 10) + delta
+  );
   scoreFileState.score[key] = String(val);
   render();
   scheduleSave();

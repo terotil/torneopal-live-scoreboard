@@ -4,15 +4,15 @@
 
 Submit [ticket](https://github.com/terotil/torneopal-live-scoreboard/issues) for bugs, questions and ideas.
 
-Submit a pull request for contribution.  Adhering to coding style described below is appreciated.
+Submit a pull request for contribution. Adhering to coding style described below is appreciated.
 
 ## Resources
 
-- [Taso API documentation](https://salibandy.api.torneopal.com/taso/rest/help) 
+- [Taso API documentation](https://salibandy.api.torneopal.com/taso/rest/help)
 
 ## Key Components
 
-- `index.html`: Complete application (HTML + CSS + JS in one file)
+- `index.html`: Complete application (HTML + CSS + JS in one file). Application state stored in DOM input element values and synchronzed to and from URL.
 - `recorder.js`: Records API responses for testing/debugging
 - `reducer.js`: Filters recorded data to show only changes
 - `console-scoreboard.js`: Console-based scoreboard controller for manual operation and testing

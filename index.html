@@ -132,36 +132,36 @@
       </fieldset>
       <fieldset>
         <legend>Anna tulospalvelun ohjata automaattisesti</legend>
-      <input
-        type="text"
-        id="api_key"
-        value=""
-        placeholder="Torneopal API key"
+        <input
+          type="text"
+          id="api_key"
+          value=""
+          placeholder="Torneopal API key"
           required
-        onchange="apiKeyChanged()"
-      />
-      <input
-        type="text"
-        id="match_url"
-        value=""
-        placeholder="Pelin URL tulospalvelusta"
-        onchange="matchUrlChanged()"
-      />
-      <select id="season_id" onchange="populateCompetitions()">
-        <option value="valitse" default>Valitse kausi</option>
-      </select>
-      <select id="competition_id" onchange="populateCategories()">
-        <option value="valitse" default>Valitse alue</option>
-      </select>
-      <select id="category_id" onchange="populateTeams()">
-        <option value="valitse" default>Valitse sarja</option>
-      </select>
-      <select id="team_id" onchange="populateMatches()">
-        <option value="valitse" default>Valitse joukkue</option>
-      </select>
-      <select id="match_id" onchange="matchChanged()">
-        <option value="valitse">Valitse ottelu</option>
-      </select>
+          onchange="apiKeyChanged()"
+        />
+        <input
+          type="text"
+          id="match_url"
+          value=""
+          placeholder="Pelin URL tulospalvelusta"
+          onchange="matchUrlChanged()"
+        />
+        <select id="season_id" onchange="populateCompetitions()">
+          <option value="valitse" default>Valitse kausi</option>
+        </select>
+        <select id="competition_id" onchange="populateCategories()">
+          <option value="valitse" default>Valitse alue</option>
+        </select>
+        <select id="category_id" onchange="populateTeams()">
+          <option value="valitse" default>Valitse sarja</option>
+        </select>
+        <select id="team_id" onchange="populateMatches()">
+          <option value="valitse" default>Valitse joukkue</option>
+        </select>
+        <select id="match_id" onchange="matchChanged()">
+          <option value="valitse">Valitse ottelu</option>
+        </select>
       </fieldset>
     </div>
     <div id="tulostaulu">
@@ -198,7 +198,7 @@
       let tasoAPIHost = TASO_API_HOST;
 
       document.addEventListener('DOMContentLoaded', async function () {
-        const context = await populateContextFromUrl();
+        const context = await populateDOMContextFromUrl();
         if (context.match_id) {
           setMatch(context.match_id);
         } else if (context.api_key) {
@@ -209,7 +209,7 @@
       });
 
       async function apiKeyChanged() {
-        const { api_key } = getContext('api_key');
+        const { api_key } = getDOMContext('api_key');
         setUrlParams('api_key', api_key);
         await populateSeasons();
         await populateCompetitions();
@@ -240,12 +240,12 @@
           : 'none';
       }
 
-      function populateContextFromUrl() {
+      function populateDOMContextFromUrl() {
         const urlParams = new URLSearchParams(window.location.search);
         const params = {};
         for (const [key, value] of urlParams) {
           params[key] = value;
-          setContext(key, value);
+          setDOMContext(key, value);
         }
         return params;
       }
@@ -253,7 +253,7 @@
       // Called from input onchange
       // eslint-disable-next-line no-unused-vars
       function matchChanged() {
-        const { match_id } = getContext('match_id');
+        const { match_id } = getDOMContext('match_id');
         setMatch(match_id);
       }
 
@@ -269,16 +269,20 @@
         history.pushState({}, '', `${location.pathname}?${urlParams}`);
       }
 
-      function setContext(key, value) {
-        const element = document.getElementById(key);
+      // Set application state stored in DOM input element values
+      function setDOMContext(elementId, value) {
+        const element = document.getElementById(elementId);
         if (element) {
           element.value = value;
         } else {
-          console.error('Element not found', key);
+          console.error('Context element not found', elementId);
         }
       }
 
-      function getContext(...paramNames) {
+      // Read application state stored in DOM input element values
+      // Given <input id='api_key' value='foo'>
+      // getDOMContext('api_key') ==> { 'api_key': 'foo' }
+      function getDOMContext(...paramNames) {
         const context = {};
         paramNames.forEach((paramName) => {
           const value = document.getElementById(paramName).value;
@@ -342,7 +346,7 @@
       async function populateCompetitions() {
         const data = await getTorneopal(
           'Competitions',
-          getContext('season_id')
+          getDOMContext('season_id')
         );
 
         populateSelect(
@@ -360,9 +364,8 @@
       function populateCategories() {
         return getTorneopal(
           'Categories',
-          getContext('season_id', 'competition_id')
+          getDOMContext('season_id', 'competition_id')
         ).then((data) => {
-          console.log('Categories', data);
           populateSelect(
             'category_id',
             data.categories.map((category) => ({
@@ -377,9 +380,8 @@
       function populateTeams() {
         return getTorneopal(
           'Teams',
-          getContext('competition_id', 'category_id')
+          getDOMContext('competition_id', 'category_id')
         ).then((data) => {
-          console.log('Teams', data);
           populateSelect(
             'team_id',
             data.teams.map((team) => ({
@@ -394,9 +396,8 @@
       function populateMatches() {
         getTorneopal(
           'Matches',
-          getContext('season_id', 'competition_id', 'category_id', 'team_id')
+          getDOMContext('season_id', 'competition_id', 'category_id', 'team_id')
         ).then((data) => {
-          console.log('Matches', data);
           populateSelect('match_id', [
             {
               id: 'valitse',
@@ -412,7 +413,6 @@
       }
 
       function populateSelect(selectId, options) {
-        console.log('populateSelect', selectId, options);
         let select = document.getElementById(selectId);
         select.innerHTML = '';
         options.forEach((option) => {
@@ -527,7 +527,7 @@
       }
 
       async function getTorneopal(resource, params) {
-        params = { ...params, ...getContext('api_key') };
+        params = { ...params, ...getDOMContext('api_key') };
         const urlParams = new URLSearchParams(params);
         const url = `${tasoAPIHost}/taso/rest/get${resource}?${urlParams}`;
         return fetch(url)
