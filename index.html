@@ -186,11 +186,15 @@
     </div>
     <script>
       const SCORE_POLL_INTERVAL = 2000; // ms
+      const LIVE_TIMER_INTERVAL = 100; // ms
       const TASO_API_HOST = 'https://salibandy.api.torneopal.com';
       // Current page location for local API to avoid unnecessary CORS errors
       const LOCAL_API_HOST = `${window.location.protocol}//${window.location.host}`;
 
-      let poll = null;
+      let scorePollTimerId = null;
+      let liveTimerId = null;
+      let liveTimerStartTime = null;
+      let liveTimerBaseSeconds = 0;
       let tasoAPIHost = TASO_API_HOST;
 
       document.addEventListener('DOMContentLoaded', async function () {
@@ -283,6 +287,43 @@
           }
         });
         return context;
+      }
+
+      function parseTimeToSeconds(timeString) {
+        if (!timeString || timeString === '') return 0;
+        const parts = timeString.split(':');
+        if (parts.length === 2) {
+          return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+        }
+        return 0;
+      }
+
+      function formatSecondsToTime(totalSeconds) {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      }
+
+      function startLiveTimer(initialTime) {
+        stopLiveTimer();
+        liveTimerBaseSeconds = parseTimeToSeconds(initialTime);
+        liveTimerStartTime = Date.now();
+
+        liveTimerId = setInterval(() => {
+          const elapsedSeconds = Math.floor(
+            (Date.now() - liveTimerStartTime) / 1000
+          );
+          const currentSeconds = liveTimerBaseSeconds + elapsedSeconds;
+          document.getElementById('liveTime').textContent =
+            formatSecondsToTime(currentSeconds);
+        }, LIVE_TIMER_INTERVAL);
+      }
+
+      function stopLiveTimer() {
+        if (liveTimerId) {
+          clearInterval(liveTimerId);
+          liveTimerId = null;
+        }
       }
 
       async function populateSeasons() {
@@ -418,10 +459,11 @@
                 liveTimerOn: match.live_timer_on === '1',
               });
 
-              if (poll) {
-                clearInterval(poll);
+              if (scorePollTimerId) {
+                clearInterval(scorePollTimerId);
               }
-              poll = setInterval(() => {
+              stopLiveTimer();
+              scorePollTimerId = setInterval(() => {
                 getTorneopal('Score', { match_id: matchId }).then((data) => {
                   updateMatchInfo({
                     scoreA: data.score.fs_A || data.score.live_A,
@@ -448,11 +490,20 @@
           // Not started yet
           info.period = '';
           info.liveTime = '';
+          stopLiveTimer();
         } else if (info.status === 'Played') {
           info.period = 'lopputulos';
+          stopLiveTimer();
         } else {
           info.period = `${info.period}. erä`;
         }
+
+        if (info.liveTimerOn) {
+          startLiveTimer(info.liveTime);
+        } else {
+          stopLiveTimer();
+        }
+
         delete info.status;
         for (const key in info) {
           if (Object.hasOwnProperty.call(info, key)) {
@@ -463,6 +514,11 @@
               document.getElementById('liveTime').className = value
                 ? 'liveTimerOn'
                 : '';
+            } else if (key === 'liveTime') {
+              // Only update liveTime display if timer is not running to avoid conflict with live timer
+              if (!info.liveTimerOn) {
+                document.getElementById(key).textContent = value;
+              }
             } else {
               document.getElementById(key).textContent = value;
             }
