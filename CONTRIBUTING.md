@@ -6,6 +6,10 @@ Submit [ticket](https://github.com/terotil/torneopal-live-scoreboard/issues) for
 
 Submit a pull request for contribution.  Adhering to coding style described below is appreciated.
 
+## Resources
+
+- [Taso API documentation](https://salibandy.api.torneopal.com/taso/rest/help) 
+
 ## Key Components
 
 - `index.html`: Complete application (HTML + CSS + JS in one file)

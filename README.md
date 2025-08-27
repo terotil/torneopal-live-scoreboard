@@ -6,7 +6,7 @@ Toistaiseksi varsinaiseen käyttötarkoitukseensa soveltumaton raakaversio!
 
 ## Käyttö
 
-Tarvitset Torneopal Taso API:n avaimen, jonka saat turnausjärjestäjältä.
+Tarvitset Torneopal Taso API:n avaimen, jonka saat seuralta tai turnausjärjestäjältä.
 
 ### Julkaistu testiversio
 
@@ -37,11 +37,6 @@ Katso lisätietoja [kehittäjäohjeista](CONTRIBUTING.md).
 
 Jatkokehityssuunnitelmissa
 
-- Ottelutunnisteen syöttö kenttään (otteluvalitsimen käytön sijaan)
-- Pelikello
 - Tulosgrafiikan visuaalisen ilmeen mukauttaminen
-- Testiaineisto ja testiaineiston ajo
-- Alusta otteluvalitsimen tila URL-parametreista
-- Päivitä otteluvalitsimen tilaa URL-parametreihin
 - Erätauon näyttö
 - Jäähykello
