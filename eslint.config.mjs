@@ -33,7 +33,7 @@ export default [
       ecmaVersion: 'latest',
       sourceType: 'commonjs',
       globals: {
-        ...globals.nodeBuiltin
+        ...globals.node
       }
     },
     rules: {

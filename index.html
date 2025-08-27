@@ -122,11 +122,22 @@
   <body>
     <div id="otteluvalinta">
       <h1>Ottelun valinta</h1>
+      <fieldset>
+        <legend>Ohjaa paikallisesti</legend>
+        <input
+          type="button"
+          value="Näytä tulostaulu"
+          onclick="initLocalScoreboard()"
+        />
+      </fieldset>
+      <fieldset>
+        <legend>Anna tulospalvelun ohjata automaattisesti</legend>
       <input
         type="text"
         id="api_key"
         value=""
         placeholder="Torneopal API key"
+          required
         onchange="apiKeyChanged()"
       />
       <input
@@ -151,6 +162,7 @@
       <select id="match_id" onchange="matchChanged()">
         <option value="valitse">Valitse ottelu</option>
       </select>
+      </fieldset>
     </div>
     <div id="tulostaulu">
       <div id="teamAlogoWrap">
@@ -173,8 +185,13 @@
       <div id="bgBar"></div>
     </div>
     <script>
-      const SCORE_POLL_INTERVAL = 5000;
+      const SCORE_POLL_INTERVAL = 2000; // ms
+      const TASO_API_HOST = 'https://salibandy.api.torneopal.com';
+      // Current page location for local API to avoid unnecessary CORS errors
+      const LOCAL_API_HOST = `${window.location.protocol}//${window.location.host}`;
+
       let poll = null;
+      let tasoAPIHost = TASO_API_HOST;
 
       document.addEventListener('DOMContentLoaded', async function () {
         const context = await populateContextFromUrl();
@@ -366,11 +383,22 @@
         });
       }
 
+      // eslint-disable-next-line no-unused-vars
+      function initLocalScoreboard() {
+        tasoAPIHost = LOCAL_API_HOST;
+        initScoreboard('local');
+      }
+
       function initScoreboard(matchId) {
         if (matchId !== 'valitse') {
           getTorneopal('Match', { match_id: matchId })
             .then((data) => {
-              console.log('Match', data);
+              if (data.call.status === 'error' && matchId === 'local') {
+                console.error(
+                  `Local API at ${tasoAPIHost} failing.  Forgot \`npm start\`?`
+                );
+                return;
+              }
               const match = data.match;
               const teamA = match.team_A_abbrevation || match.team_A_name;
               const teamB = match.team_B_abbrevation || match.team_B_name;
@@ -445,7 +473,7 @@
       async function getTorneopal(resource, params) {
         params = { ...params, ...getContext('api_key') };
         const urlParams = new URLSearchParams(params);
-        const url = `https://salibandy.api.torneopal.com/taso/rest/get${resource}?${urlParams}`;
+        const url = `${tasoAPIHost}/taso/rest/get${resource}?${urlParams}`;
         return fetch(url)
           .then((response) => response.json())
           .catch((error) => console.error(error));

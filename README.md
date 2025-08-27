@@ -25,7 +25,7 @@ Tätä varten tarvitaan [Node.js](https://nodejs.org/). Lataa (tai kloonaa) repo
 
 Voit syöttää avaimen tekstikenttään tai jos avasit sivun web-palvelimen kautta, voit syöttää avaimen myös URL-parametreissa
 
-    http://<paikallinen palvelimesi>/?api_key=<avain>
+    http://<paikallinen palvelimesi>/index.html?api_key=<avain>
 
 Tehtyäsi otteluvalinnan, tulostaulu ilmestyy näkyviin. Nyt voit kopioida osoitteen selaimen osoiteriviltä ja syöttää sen OBS:n "Browser Source" asetuksiin URL-kenttään.
 
